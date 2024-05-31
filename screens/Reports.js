@@ -9,6 +9,7 @@ import { getFirestore } from "firebase/firestore";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import LoadingOverlay from "../components/ui/LoadingOverlay";
 import { useState, useEffect } from "react";
+import { ButtonGroup } from "@rneui/themed";
 
 function Reports() {
   const auth = getAuth();
@@ -21,6 +22,7 @@ function Reports() {
   const [chartData, setChartData] = useState([]);
   const [weeksMaxExpenditure, setWeeksMaxExpenditure] = useState(0);
   const [weeksTotalExpenditure, setWeeksTotalExpenditure] = useState(0);
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
   const getData = async (db, uid) => {
     const q = query(collection(db, "Expense"), where("user", "==", uid));
@@ -51,7 +53,6 @@ function Reports() {
 
   useEffect(() => {
     fetchData();
-    return null;
   }, []);
 
   function onMorePressHandler() {}
@@ -62,36 +63,43 @@ function Reports() {
   function createWeeklyBarData(expense) {
     const barData = [];
     var today = new Date();
-    let maxExpenseSoFar = 0;
-    const daysOfWeek = ["S", "M", "T", "W", "T", "F", "S"];
-    for (let i = 6; i >= 0; i--) {
+    let totalExpensesSoFar = 0;
+    const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+    console.log("start");
+    for (let i = selectedIndex === 0 ? 6 : 30; i >= 0; i--) {
       const concernedDate = new Date(today.getTime());
       concernedDate.setDate(concernedDate.getDate() - i);
 
       const formattedCurrentDate = concernedDate.toISOString().split("T")[0];
+      console.log("formattedCurrentDate: ", formattedCurrentDate);
 
-      const totalExpensesOnCurrentDate = expense
+      const dailyExpenses = expense
         .filter((expense) => {
           const expenseDate = new Date(expense.date);
           const formattedExpenseDate = expenseDate.toISOString().split("T")[0];
+          if (formattedExpenseDate === formattedCurrentDate) {
+            console.log("HURRAHAA");
+          }
           return formattedExpenseDate === formattedCurrentDate;
         })
         .reduce((sum, expense) => {
           return sum + expense.total;
         }, 0);
 
-      if (totalExpensesOnCurrentDate >= maxExpenseSoFar) {
-        maxExpenseSoFar = totalExpensesOnCurrentDate;
-      }
-      setWeeksTotalExpenditure(
-        (prevState) => prevState + totalExpensesOnCurrentDate
-      );
+      totalExpensesSoFar += dailyExpenses;
       barData.push({
         label: daysOfWeek[concernedDate.getDay()],
-        value: totalExpensesOnCurrentDate,
+        value: dailyExpenses,
       });
     }
-    setWeeksMaxExpenditure(maxExpenseSoFar);
+
+    console.log("end");
+    const weeksMaxExpenditure = Math.max(...barData.map((item) => item.value));
+
+    setWeeksTotalExpenditure(totalExpensesSoFar);
+    setWeeksMaxExpenditure(weeksMaxExpenditure);
+
     return barData;
   }
 
@@ -111,7 +119,24 @@ function Reports() {
       <View style={styles.totalExpenseContainer}>
         <Text style={styles.weekExpense}>${weeksTotalExpenditure}</Text>
         <Text style={styles.weekText}>Spent this week</Text>
+        <ButtonGroup
+          buttons={["Weekly", "Monthly"]}
+          selectedIndex={selectedIndex}
+          onPress={(value) => {
+            setSelectedIndex(value);
+          }}
+          selectedButtonStyle={{
+            backgroundColor: null,
+          }}
+          selectedTextStyle={{ color: colors.primary500 }}
+          textStyle={{ color: colors.gray700 }}
+          containerStyle={{
+            borderBottomColor: colors.gray400,
+            borderBottomWidth: 2,
+          }}
+        />
       </View>
+
       <View style={styles.barChart}>
         <BarChart
           barWidth={22}
@@ -125,7 +150,7 @@ function Reports() {
           maxValue={floorUpNearestHundred(weeksMaxExpenditure)}
           barBorderTopLeftRadius={4}
           barBorderTopRightRadius={4}
-          disableScroll
+          disableScroll={selectedIndex == 0 ? true : false}
           height={180}
           xAxisLabelTextStyle={{
             color: colors.gray700,

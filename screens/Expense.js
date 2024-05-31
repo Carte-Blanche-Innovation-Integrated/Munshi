@@ -9,10 +9,32 @@ import app from "../firebaseConfig";
 import { getFirestore } from "firebase/firestore";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import LoadingOverlay from "../components/ui/LoadingOverlay";
+import {
+  format,
+  parseISO,
+  startOfDay,
+  endOfDay,
+  isAfter,
+  isBefore,
+  subDays,
+} from "date-fns";
 
 export function calculateTotalSpent(expenses) {
+  const today = new Date();
+
+  const lastWeekStart = subDays(today, 7);
+  const lastWeekEnd = today;
+
+  const filteredExpenses = expenses.filter((expense) => {
+    const expenseDate = parseISO(expense.date);
+
+    return (
+      isAfter(expenseDate, startOfDay(lastWeekStart)) &&
+      isBefore(expenseDate, endOfDay(lastWeekEnd))
+    );
+  });
   let total = 0;
-  expenses.forEach((expense) => {
+  filteredExpenses.forEach((expense) => {
     total += expense.total;
   });
   return total;
@@ -63,6 +85,9 @@ function Expense() {
   function onHideModalHandler() {
     setAddModalVisible(false);
   }
+
+  function calculateWeeksExpense() {}
+
   return (
     <>
       <View style={styles.rootContainer}>
