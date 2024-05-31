@@ -62,6 +62,7 @@ function Reports() {
   function createWeeklyBarData(expense) {
     const barData = [];
     var today = new Date();
+    let maxExpenseSoFar = 0;
     const daysOfWeek = ["S", "M", "T", "W", "T", "F", "S"];
     for (let i = 6; i >= 0; i--) {
       const concernedDate = new Date(today.getTime());
@@ -79,8 +80,8 @@ function Reports() {
           return sum + expense.total;
         }, 0);
 
-      if (totalExpensesOnCurrentDate >= weeksMaxExpenditure) {
-        setWeeksMaxExpenditure(totalExpensesOnCurrentDate);
+      if (totalExpensesOnCurrentDate >= maxExpenseSoFar) {
+        maxExpenseSoFar = totalExpensesOnCurrentDate;
       }
       setWeeksTotalExpenditure(
         (prevState) => prevState + totalExpensesOnCurrentDate
@@ -90,6 +91,7 @@ function Reports() {
         value: totalExpensesOnCurrentDate,
       });
     }
+    setWeeksMaxExpenditure(maxExpenseSoFar);
     return barData;
   }
 
