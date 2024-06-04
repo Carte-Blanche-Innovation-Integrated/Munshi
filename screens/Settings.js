@@ -17,6 +17,7 @@ import {
   Upload,
   CircleX,
 } from "lucide-react-native";
+import NameText from "../atomicComponents/NameText";
 
 function Settings() {
   const auth = getAuth();
@@ -27,7 +28,7 @@ function Settings() {
   return (
     <View style={styles.rootContainer}>
       <View style={styles.logoutButtonContainer}>
-        <Text style={styles.nameText}>{user.displayName}</Text>
+        <NameText name={user.displayName} />
         <Pressable>
           <Ionicons
             onPress={onLogoutPressHandler}
@@ -90,7 +91,7 @@ function Settings() {
             },
             {
               title: "Common Currency",
-              selection: "PKR",
+              selection: "USD",
               id: "4",
               icon: <DollarSign color="white" size={22} />,
               bgStyles: {
@@ -198,13 +199,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-  },
-  nameText: {
-    fontSize: 12,
-    fontWeight: "bold",
-    marginBottom: 8,
-    color: colors.primary900,
-    fontFamily: "ubuntu-bold",
   },
 });
 

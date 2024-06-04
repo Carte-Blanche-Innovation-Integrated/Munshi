@@ -9,34 +9,11 @@ import app from "../firebaseConfig";
 import { getFirestore } from "firebase/firestore";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import LoadingOverlay from "../components/ui/LoadingOverlay";
-import {
-  format,
-  parseISO,
-  startOfDay,
-  endOfDay,
-  isAfter,
-  isBefore,
-  subDays,
-} from "date-fns";
+import NameText from "../atomicComponents/NameText";
 
 export function calculateTotalSpent(expenses) {
-  const today = new Date();
-
-  const lastWeekStart = subDays(today, 7);
-  const lastWeekEnd = today;
-
-  const filteredExpenses = expenses.filter((expense) => {
-    const expenseDate = parseISO(expense.date);
-
-    return (
-      isAfter(expenseDate, startOfDay(lastWeekStart)) &&
-      isBefore(expenseDate, endOfDay(lastWeekEnd))
-    );
-  });
   let total = 0;
-  filteredExpenses.forEach((expense) => {
-    total += expense.total;
-  });
+  expenses.forEach((a) => (total = total + a.total));
   return total;
 }
 
@@ -92,7 +69,7 @@ function Expense() {
     <>
       <View style={styles.rootContainer}>
         <View style={styles.addExpenseContainer}>
-          <Text style={styles.nameText}>{user.displayName}</Text>
+          <NameText name={user.displayName} />
           <Pressable>
             <Ionicons
               onPress={onAddPressHandler}
@@ -108,7 +85,7 @@ function Expense() {
           onHideModalHandler={onHideModalHandler}
         />
         <View style={styles.weekExpenseContainer}>
-          <Text style={styles.weekText}>Spent this week</Text>
+          <Text style={styles.weekText}>All time spendings</Text>
           <Text style={styles.weekExpense}>
             ${calculateTotalSpent(expense)}
           </Text>
@@ -131,13 +108,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
     paddingTop: 10,
-  },
-  nameText: {
-    fontSize: 12,
-    fontWeight: "bold",
-    marginBottom: 8,
-    color: colors.primary900,
-    fontFamily: "ubuntu-medium",
   },
   addExpenseContainer: {
     flexDirection: "row",

@@ -29,6 +29,7 @@
     "expo-linear-gradient": "~13.0.2",
     "expo-status-bar": "~1.12.1",
     "firebase": "^10.12.1",
+    "just-group-by": "^2.2.0",
     "lucide-react-native": "^0.379.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
@@ -39,6 +40,7 @@
     "react-native-modal-datetime-picker": "^17.1.0",
     "react-native-paper": "^5.12.3",
     "react-native-svg": "15.2.0",
+    "react-native-switch": "^1.5.1",
     "react-native-web": "~0.19.10"
   },
   "devDependencies": {

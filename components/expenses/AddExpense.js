@@ -65,10 +65,6 @@ function AddExpense({ addModalVisible, onHideModalHandler, fetchData }) {
     const db = getFirestore(app);
     setTitleIsValid(eneteredTitle.length > 0);
     setAmountIsValid(typeof eneteredAmount == "number");
-    console.log("Title aya: ", eneteredTitle);
-    console.log("Amount aya: ", typeof eneteredAmount);
-    console.log("Type aya: ", eneteredType);
-    console.log("Date aya: ", eneteredDate);
     if (!titleIsValid || !amountIsValid) {
       Alert.alert("Bro");
     } else {
@@ -98,16 +94,19 @@ function AddExpense({ addModalVisible, onHideModalHandler, fetchData }) {
                 onUpdateValue={handleTitleValue}
                 keyboardType="text"
                 isInvalid={!titleIsValid}
+                placeholder="Icecream"
               />
               <Input
-                label="Amount"
+                label="Amount ($)"
                 onUpdateValue={handleAmountValue}
                 value={eneteredAmount}
-                keyboardType="number"
                 isInvalid={!amountIsValid}
+                keyboardType="numeric"
+                placeholder="350"
               />
               <Input
                 label="Type"
+                placeholder="Groceries"
                 onUpdateValue={handleTypeValue}
                 value={eneteredType}
                 keyboardType="text"

@@ -42,16 +42,16 @@ function AuthenticatedStack() {
   return (
     <NavigationContainer>
       <Tab.Navigator
-        initialRouteName="Expense"
+        initialRouteName="Weekly Report"
         screenOptions={({ route }) => ({
           headerStyle: { backgroundColor: colors.primary900 },
           headerTintColor: "white",
           contentStyle: { backgroundColor: colors.primary900 },
           tabBarIcon: ({ focused, color, size }) => {
             let iconName;
-            if (route.name === "Expense") {
+            if (route.name === "Expense Log") {
               iconName = focused ? "file-tray-full" : "file-tray-full-outline";
-            } else if (route.name === "Reports") {
+            } else if (route.name === "Weekly Report") {
               iconName = focused ? "stats-chart" : "stats-chart-outline";
             } else if (route.name === "Settings") {
               iconName = focused ? "settings" : "settings-outline";
@@ -63,8 +63,8 @@ function AuthenticatedStack() {
           tabBarShowLabel: false,
         })}
       >
-        <Tab.Screen name="Expense" component={Expense} />
-        <Tab.Screen name="Reports" component={Reports} />
+        <Tab.Screen name="Expense Log" component={Expense} />
+        <Tab.Screen name="Weekly Report" component={Reports} />
         <Tab.Screen name="Settings" component={Settings} />
       </Tab.Navigator>
     </NavigationContainer>
