@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Pressable, Alert } from "react-native";
+import { View, Text, StyleSheet, Pressable, Image } from "react-native";
 import colors from "../constants/colors";
 import { Ionicons } from "@expo/vector-icons";
 import ExpenseList from "../components/expenses/ExpenseList";
@@ -7,29 +7,16 @@ import AddExpense from "../components/expenses/AddExpense";
 import { getAuth } from "firebase/auth";
 import app from "../firebaseConfig";
 import { getFirestore } from "firebase/firestore";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
 import LoadingOverlay from "../components/ui/LoadingOverlay";
 import NameText from "../atomicComponents/NameText";
+import EmptyState from "../atomicComponents/EmptyState";
 
 export function calculateTotalSpent(expenses) {
   let total = 0;
   expenses.forEach((a) => (total = total + a.total));
   return total;
 }
-
-const getData = async (db, uid) => {
-  const q = query(collection(db, "Expense"), where("user", "==", uid));
-  const querySnapshot = await getDocs(q);
-
-  const expenseList = [];
-  let expenseObj = {};
-  querySnapshot.forEach((doc) => {
-    expenseObj = doc.data();
-    expenseObj["id"] = doc.id;
-    expenseList.push(expenseObj);
-  });
-  return expenseList;
-};
 
 function Expense() {
   const auth = getAuth(app);
@@ -41,19 +28,18 @@ function Expense() {
   const [addModalVisible, setAddModalVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchData = async () => {
-    try {
-      const fetchedData = await getData(db, user.uid);
-      setExpense(fetchedData);
-    } catch (error) {
-      console.error("Failed to fetch expenses:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchData();
+    const expensesCollection = query(
+      collection(db, "Expense"),
+      where("user", "==", user.uid)
+    );
+    const unsubscribe = onSnapshot(expensesCollection, (snapshot) => {
+      const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setExpense(data);
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
   function onAddPressHandler() {
@@ -63,7 +49,7 @@ function Expense() {
     setAddModalVisible(false);
   }
 
-  function calculateWeeksExpense() {}
+  console.log("ASDASD: ", expense.length);
 
   return (
     <>
@@ -80,7 +66,6 @@ function Expense() {
           </Pressable>
         </View>
         <AddExpense
-          fetchData={fetchData}
           addModalVisible={addModalVisible}
           onHideModalHandler={onHideModalHandler}
         />
@@ -95,8 +80,10 @@ function Expense() {
             message={"Fetching data..."}
             custStyles={{ color: colors.primary900 }}
           />
-        ) : (
+        ) : expense.length > 0 ? (
           <ExpenseList expenseList={expense} />
+        ) : (
+          <EmptyState message={"No expense added so far"} />
         )}
       </View>
     </>
@@ -126,6 +113,11 @@ const styles = StyleSheet.create({
     color: colors.gray900,
     fontSize: 90,
     fontFamily: "ubuntu-light",
+  },
+  imageStyle: { height: 150, width: 150, alignSelf: "center" },
+  noExpenseContainer: {
+    alignItems: "center",
+    gap: 10,
   },
 });
 

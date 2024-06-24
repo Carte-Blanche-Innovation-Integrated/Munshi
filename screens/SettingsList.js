@@ -25,7 +25,6 @@ function SettingsList({ settingsList }) {
                 <Text style={styles.selectionText}>{item.selection}</Text>
                 <Pressable>
                   <Ionicons
-                    //onPress={onAddPressHandler}
                     name="chevron-forward-outline"
                     size={18}
                     color={colors.gray600}

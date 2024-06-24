@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Alert, Modal, StyleSheet, Text, Pressable, View } from "react-native";
+import { Alert, Modal, StyleSheet, Text, View } from "react-native";
 import Button from "../ui/Button";
 import FlatButton from "../ui/FlatButton";
 import colors from "../../constants/colors";
@@ -10,16 +10,9 @@ import { formatDate as formatFn } from "date-fns";
 import { getAuth } from "firebase/auth";
 import app from "../../firebaseConfig";
 import { getFirestore } from "firebase/firestore";
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-  doc,
-  setDoc,
-} from "firebase/firestore";
+import { collection, doc, setDoc } from "firebase/firestore";
 
-function AddExpense({ addModalVisible, onHideModalHandler, fetchData }) {
+function AddExpense({ addModalVisible, onHideModalHandler }) {
   const auth = getAuth(app);
   const user = auth.currentUser;
 
@@ -50,15 +43,12 @@ function AddExpense({ addModalVisible, onHideModalHandler, fetchData }) {
 
   const handleTitleValue = (value) => {
     setEneteredTitle(value);
-    console.log("Value", eneteredTitle);
   };
   const handleAmountValue = (value) => {
     setEnteredAmount(Number(value));
-    console.log("Value", eneteredAmount);
   };
   const handleTypeValue = (value) => {
     setEnteredType(value);
-    console.log("Value", eneteredType);
   };
 
   const onConfirmButtonHandler = async () => {
@@ -77,7 +67,6 @@ function AddExpense({ addModalVisible, onHideModalHandler, fetchData }) {
       };
       const newRef = doc(collection(db, "Expense"));
       await setDoc(newRef, expenseObj);
-      fetchData();
       onHideModalHandler();
     }
   };
@@ -128,6 +117,7 @@ function AddExpense({ addModalVisible, onHideModalHandler, fetchData }) {
                 onCancel={hideDatePicker}
                 buttonTextColorIOS={colors.primary500}
                 display="inline"
+                maximumDate={new Date()}
               />
             </View>
             <View style={styles.buttonContainer}>
@@ -143,10 +133,8 @@ function AddExpense({ addModalVisible, onHideModalHandler, fetchData }) {
 
 const styles = StyleSheet.create({
   centeredView: {
-    flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 22,
   },
   modalView: {
     backgroundColor: "white",
@@ -156,11 +144,12 @@ const styles = StyleSheet.create({
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 0,
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
+    shadowOpacity: 0.7,
+    shadowRadius: 6,
     elevation: 5,
+    marginTop: 100,
   },
   modalText: {
     marginBottom: 15,

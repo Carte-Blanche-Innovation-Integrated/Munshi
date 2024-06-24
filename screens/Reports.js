@@ -1,11 +1,4 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  Pressable,
-  Switch,
-  ScrollView,
-} from "react-native";
+import { View, Text, StyleSheet, Pressable, Switch } from "react-native";
 import {
   subDays,
   isAfter,
@@ -23,12 +16,14 @@ import ExpenseList from "../components/expenses/ExpenseList";
 import { getAuth } from "firebase/auth";
 import app from "../firebaseConfig";
 import { getFirestore } from "firebase/firestore";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
 import LoadingOverlay from "../components/ui/LoadingOverlay";
 import { useState, useEffect } from "react";
 import { ButtonGroup } from "@rneui/themed";
 import { PieChart } from "react-native-gifted-charts";
 import NameText from "../atomicComponents/NameText";
+import AddExpense from "../components/expenses/AddExpense";
+import EmptyState from "../atomicComponents/EmptyState";
 
 const renderLegend = (text, color) => {
   return (
@@ -66,48 +61,33 @@ function Reports() {
   const [expense, setExpense] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [chartData, setChartData] = useState([]);
+  const [addModalVisible, setAddModalVisible] = useState(false);
   const [pieData, setPieData] = useState([]);
   const [weeksMaxExpenditure, setWeeksMaxExpenditure] = useState(0);
   const [weeksTotalExpenditure, setWeeksTotalExpenditure] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isSwitchEnabled, setIsSwitchEnabled] = useState(true);
 
-  const getData = async (db, uid) => {
-    const q = query(collection(db, "Expense"), where("user", "==", uid));
-    const querySnapshot = await getDocs(q);
-
-    const expenseList = [];
-    let expenseObj = {};
-    querySnapshot.forEach((doc) => {
-      expenseObj = doc.data();
-      expenseObj["id"] = doc.id;
-      expenseList.push(expenseObj);
-    });
-    return expenseList;
-  };
-
-  const fetchData = async () => {
-    try {
-      const fetchedData = await getData(db, user.uid);
-      const chartWeeklyData = createWeeklyBarData(fetchedData);
-      const pieWeeklyData = createWeeklyPieData(fetchedData);
-      setExpense(fetchedData);
-      setChartData(chartWeeklyData);
-      setPieData(pieWeeklyData);
-    } catch (error) {
-      console.error("Failed to fetch expenses:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {}, [selectedIndex]);
 
   useEffect(() => {
-    fetchData();
+    const expensesCollection = query(
+      collection(db, "Expense"),
+      where("user", "==", user.uid)
+    );
+    const unsubscribe = onSnapshot(expensesCollection, (snapshot) => {
+      const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setExpense(data);
+      const chartWeeklyData = createWeeklyBarData(data);
+      const pieWeeklyData = createWeeklyPieData(data);
+      setChartData(chartWeeklyData);
+      setPieData(pieWeeklyData);
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  function onMorePressHandler() {}
   function floorUpNearestHundred(number) {
     return Math.floor(number / 100) * 100 + 100;
   }
@@ -182,14 +162,13 @@ function Reports() {
     });
     return pieData;
   }
+  function onAddPressHandler() {
+    setAddModalVisible(true);
+  }
+  function onHideModalHandler() {
+    setAddModalVisible(false);
+  }
 
-  // const color_list = [
-  //   colors.gray400,
-  //   colors.gray600,
-  //   colors.gray700,
-  //   colors.gray800,
-  //   colors.gray900,
-  // ];
   const color_list = [
     colors.primary200,
     colors.primary300,
@@ -204,59 +183,68 @@ function Reports() {
         <NameText name={user.displayName} />
         <Pressable>
           <Ionicons
-            onPress={onMorePressHandler}
-            name="ellipsis-horizontal-outline"
+            onPress={onAddPressHandler}
+            name="add-circle-outline"
             size={25}
             color={colors.primary600}
           />
         </Pressable>
       </View>
-      <View style={styles.totalExpenseContainer}>
-        <View style={styles.weekExpenseToggleButton}>
-          <View>
-            <Text style={styles.weekExpense}>${weeksTotalExpenditure}</Text>
-            <Text style={styles.weekText}>Spent this week</Text>
+      <AddExpense
+        addModalVisible={addModalVisible}
+        onHideModalHandler={onHideModalHandler}
+      />
+      {
+        <View style={styles.totalExpenseContainer}>
+          <View style={styles.weekExpenseToggleButton}>
+            <View>
+              <Text style={styles.weekExpense}>${weeksTotalExpenditure}</Text>
+              <Text style={styles.weekText}>Spent this week</Text>
+            </View>
+            {expense.length > 0 && (
+              <View style={styles.detailSwitchContainer}>
+                <Text style={styles.weekText}>Detail</Text>
+                <Switch
+                  trackColor={{
+                    false: colors.gray600,
+                    true: colors.primary200,
+                  }}
+                  thumbColor={true ? colors.primary800 : "white"}
+                  ios_backgroundColor={colors.gray600}
+                  onValueChange={handleSwitchToggle}
+                  value={isSwitchEnabled}
+                />
+              </View>
+            )}
           </View>
-          <View style={styles.detailSwitchContainer}>
-            <Text style={styles.weekText}>Detail</Text>
-            <Switch
-              trackColor={{
-                false: colors.gray600,
-                true: colors.primary200,
+          {isSwitchEnabled && expense.length > 0 && (
+            <ButtonGroup
+              buttons={["Daily Detail", "By Category"]}
+              selectedIndex={selectedIndex}
+              onPress={(value) => {
+                setSelectedIndex(value);
               }}
-              thumbColor={true ? colors.primary800 : "white"}
-              ios_backgroundColor={colors.gray600}
-              onValueChange={handleSwitchToggle}
-              value={isSwitchEnabled}
+              selectedButtonStyle={{
+                backgroundColor: null,
+              }}
+              selectedTextStyle={{ color: colors.primary500 }}
+              textStyle={{ color: colors.gray700 }}
+              containerStyle={{
+                borderBottomColor: colors.gray400,
+                borderBottomWidth: 1.8,
+              }}
             />
-          </View>
+          )}
         </View>
-        {isSwitchEnabled && (
-          <ButtonGroup
-            buttons={["Daily Detail", "By Category"]}
-            selectedIndex={selectedIndex}
-            onPress={(value) => {
-              setSelectedIndex(value);
-            }}
-            selectedButtonStyle={{
-              backgroundColor: null,
-            }}
-            selectedTextStyle={{ color: colors.primary500 }}
-            textStyle={{ color: colors.gray700 }}
-            containerStyle={{
-              borderBottomColor: colors.gray400,
-              borderBottomWidth: 1.8,
-            }}
-          />
-        )}
-      </View>
+      }
       {isLoading ? (
         <LoadingOverlay
           message={"Fetching data..."}
           custStyles={{ color: colors.primary900 }}
         />
       ) : (
-        isSwitchEnabled && (
+        isSwitchEnabled &&
+        expense.length > 0 && (
           <View style={styles.graphContainer}>
             {selectedIndex === 1 ? (
               <View style={styles.pieContainer}>
@@ -310,6 +298,11 @@ function Reports() {
           </View>
         )
       )}
+      {expense.lenght == 0 && (
+        <View style={styles.emptyStateContainer}>
+          <EmptyState message={"No expense added so far"} />
+        </View>
+      )}
       {isLoading ? (
         <LoadingOverlay
           message={"Fetching data..."}
@@ -360,6 +353,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 8,
     alignItems: "center",
+  },
+  emptyStateContainer: {
+    flex: 1,
+    alignItems: "center",
+    alignContent: "center",
+    justifyContent: "center",
   },
 });
 

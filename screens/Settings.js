@@ -43,7 +43,6 @@ function Settings() {
           settingsList={[
             {
               title: "Unlock Premium",
-              //selection: "",
               id: "1",
               icon: <Crown color="white" size={22} />,
               bgStyles: {
@@ -69,7 +68,6 @@ function Settings() {
             },
             {
               title: "App Icons",
-              //selection: "",
               id: "2",
               icon: <Gift color="white" size={22} />,
               bgStyles: {
@@ -128,7 +126,6 @@ function Settings() {
           settingsList={[
             {
               title: "Account",
-              //selection: "",
               id: "1",
               icon: <CreditCard color="white" size={22} />,
               bgStyles: {
@@ -139,7 +136,6 @@ function Settings() {
             },
             {
               title: "Categories",
-              //selection: "",
               id: "2",
               icon: <List color="white" size={22} />,
               bgStyles: {
@@ -150,7 +146,6 @@ function Settings() {
             },
             {
               title: "Import",
-              //selection: "",
               id: "3",
               icon: <Download color="white" size={22} />,
               bgStyles: {
@@ -161,7 +156,6 @@ function Settings() {
             },
             {
               title: "Export",
-              //selection: "",
               id: "4",
               icon: <Upload color="white" size={22} />,
               bgStyles: {
@@ -172,7 +166,6 @@ function Settings() {
             },
             {
               title: "Erase Data",
-              //selection: "",
               id: "5",
               icon: <CircleX color="white" size={22} />,
               bgStyles: {

@@ -119,7 +119,7 @@ const ExpenseList = ({ expenseList }) => {
 };
 
 const styles = StyleSheet.create({
-  lastItem: {},
+  scrollViewStyles: {},
 });
 
 export default ExpenseList;

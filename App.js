@@ -17,6 +17,8 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 
 import AppLoading from "expo-app-loading";
 
+console.disableYellowBox = true;
+
 const Tab = createBottomTabNavigator();
 
 const Stack = createNativeStackNavigator();

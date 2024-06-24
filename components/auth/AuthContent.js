@@ -32,17 +32,35 @@ function AuthContent({ isLogin, onAuthenticate }) {
     password = password.trim();
 
     const emailIsValid = email.includes("@");
-    const nameIsValid = !name.includes("@", "-", ",", "!", "`", "{", "}");
+    const nameIsValid = !name
+      .trim()
+      .includes("@", "-", ",", "!", "`", "{", "}");
     const passwordIsValid = password.length > 6;
     const emailsAreEqual = email === confirmEmail;
     const passwordsAreEqual = password === confirmPassword;
 
     if (
+      !nameIsValid ||
       !emailIsValid ||
       !passwordIsValid ||
       (!isLogin && (!emailsAreEqual || !passwordsAreEqual))
     ) {
-      Alert.alert("Invalid input", "Please check your entered credentials.");
+      let message, error;
+      if (!emailIsValid) {
+        error = "Invalid Email";
+        message = "Please check the email that you have entered!";
+      } else if (!emailsAreEqual) {
+        error = "Unmatching Emails";
+        message = "The emails you entered don't match!";
+      } else if (!passwordIsValid) {
+        error = "Invalid Password";
+        message =
+          "The password should at least be more than 6 characters long!";
+      } else if (!passwordsAreEqual) {
+        error = "Unmatching Passwords";
+        message = "The passwords you entered don't match!";
+      }
+      Alert.alert(error, message);
       setCredentialsInvalid({
         email: !emailIsValid,
         name: !nameIsValid,
